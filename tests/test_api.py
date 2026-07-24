@@ -8,10 +8,12 @@ def test_get_demos():
     response = client.get("/api/demos")
     assert response.status_code == 200
     data = response.json()
+    assert "fourier_series" in data
+    assert "lorenz_attractor" in data
     assert "solar_system" in data
     assert "neural_net" in data
     assert "wave_interference" in data
-    assert "simulation_html" in data["solar_system"]
+    assert "simulation_html" in data["fourier_series"]
 
 def test_generate_offline_fallback():
     response = client.post("/api/generate", json={"concept": "quantum entanglement"})

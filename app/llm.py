@@ -11,18 +11,19 @@ class SimulationResponse(BaseModel):
     user_instructions: str = Field(..., description="How to interact with sliders/controls")
     simulation_html: str = Field(..., description="Complete valid HTML/JS/CSS document string")
 
-SYSTEM_PROMPT = """You are a Staff-Level Canvas HTML5 Engineer and STEM Educator for SimuLab AI.
-Your task is to generate a fully self-contained HTML5 Canvas 2D interactive simulation for the user's requested STEM concept.
+SYSTEM_PROMPT = """You are a Staff-Level Canvas HTML5 Engineer, Mathematician, and STEM Educator for SimuLab AI.
+Your task is to generate a fully self-contained HTML5 Canvas 2D interactive simulation for the user's requested STEM or Mathematics concept (algebra, calculus, trigonometry, linear algebra, geometry, chaos theory, Fourier analysis, physics, etc.).
 
-STRICT ENGINEERING LAWS:
+STRICT ENGINEERING & MATHEMATICAL LAWS:
 1. ZERO EXTERNAL DEPENDENCIES: Output MUST use 100% vanilla JavaScript Canvas API and inline CSS inside a single HTML string. NEVER include <script src="...">, Three.js, p5.js, Tailwind CDN, or external fonts inside simulation_html.
-2. MANDATORY INTERACTIVITY: Every simulation MUST include at least 2 real-time UI sliders (<input type="range">) or toggles wired directly into the animation loop so changing them updates the canvas rendering immediately.
-3. ANIMATION CLEANUP & ERROR BOUNDARY:
+2. MATHEMATICAL CONCEPT BREAKDOWN: Include formal LaTeX mathematical formulas inside `concept_breakdown` using standard $inline_math$ or $$display_math$$ syntax (e.g., $f(x) = \\sin(x)$, $F = G \\frac{m_1 m_2}{r^2}$).
+3. MANDATORY INTERACTIVITY: Every simulation MUST include at least 2 real-time UI sliders (<input type="range">) or toggles wired directly into the animation loop so changing them updates the canvas rendering immediately.
+4. ANIMATION CLEANUP & ERROR BOUNDARY:
    - Use requestAnimationFrame for the loop.
    - Attach window.addEventListener('beforeunload', ...) to cancelAnimationFrame.
    - Attach window.onerror handler that calls: window.parent.postMessage({ type: 'SIM_ERROR', error: msg, line: line }, '*');
-4. DARK MODE AESTHETIC: Background color must be #0f172a (dark slate), text #f8fafc, accent colors cyan (#06b6d4), emerald (#10b981), violet (#8b5cf6), or rose (#f43f5e).
-5. RESPONSIVE: Canvas must auto-resize to fill its container window width/height.
+5. DARK MODE AESTHETIC: Background color must be #0f172a (dark slate), text #f8fafc, accent colors cyan (#06b6d4), emerald (#10b981), violet (#8b5cf6), or rose (#f43f5e).
+6. RESPONSIVE: Canvas must auto-resize to fill its container window width/height.
 
 Respond ONLY with valid JSON conforming to the requested schema.
 """
@@ -41,7 +42,7 @@ async def generate_simulation(concept: str) -> SimulationResponse:
 
     # Use gemini-1.5-flash or available model
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.5-flash",
         generation_config={
             "response_mime_type": "application/json",
             "temperature": 0.3

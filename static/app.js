@@ -9,13 +9,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const tickerLogs = document.getElementById('tickerLogs');
   const tickerTimer = document.getElementById('tickerTimer');
   const demoBtns = document.querySelectorAll('.demo-btn');
+  const promptTags = document.querySelectorAll('.prompt-tag');
   const errorBoundary = document.getElementById('errorBoundary');
   const errorMessage = document.getElementById('errorMessage');
   const regenerateErrBtn = document.getElementById('regenerateErrBtn');
 
   let heroDemos = {};
-  let currentConcept = 'solar_system';
+  let currentConcept = 'fourier_series';
   let tickerInterval = null;
+
+  // Helper to render KaTeX math formulas cleanly
+  function triggerMathRender() {
+    if (window.renderMathInElement) {
+      try {
+        window.renderMathInElement(conceptBreakdown, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+        window.renderMathInElement(userInstructions, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      } catch (err) {
+        console.warn('KaTeX render warning:', err);
+      }
+    }
+  }
 
   // 1. Fetch pre-seeded hero demos on load
   async function fetchHeroDemos() {
@@ -23,8 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/demos');
       if (res.ok) {
         heroDemos = await res.json();
-        // Auto-load solar system immediately
-        if (heroDemos['solar_system']) {
+        // Auto-load Fourier Epicycles math demo by default
+        if (heroDemos['fourier_series']) {
+          loadDemo('fourier_series');
+        } else if (heroDemos['solar_system']) {
           loadDemo('solar_system');
         }
       }
@@ -33,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 2. Load demo payload into iframe & update breakdown card
+  // 2. Load demo payload into iframe & update breakdown card with math
   function loadDemo(demoKey) {
     const demo = heroDemos[demoKey];
     if (!demo) return;
@@ -44,16 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update active button state
     demoBtns.forEach(btn => {
       if (btn.dataset.demo === demoKey) {
-        btn.className = 'demo-btn active px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30';
+        btn.className = 'demo-btn active px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30';
       } else {
-        btn.className = 'demo-btn px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-700/60';
+        btn.className = 'demo-btn px-2.5 py-1 text-xs font-medium rounded-lg transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-700/60';
       }
     });
 
     // Update Feynman Breakdown Card
     conceptTitle.textContent = demo.title;
-    conceptBreakdown.textContent = demo.concept_breakdown;
-    userInstructions.textContent = demo.user_instructions;
+    conceptBreakdown.innerHTML = demo.concept_breakdown;
+    userInstructions.innerHTML = demo.user_instructions;
+
+    // Render LaTeX Math Formulas
+    triggerMathRender();
 
     // Inject into iframe via srcdoc
     simFrame.srcdoc = demo.simulation_html;
@@ -67,13 +99,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Prompt suggestion tags click handlers
+  promptTags.forEach(tag => {
+    tag.addEventListener('click', () => {
+      const text = tag.textContent.replace(/^[^\w]+/, '').trim();
+      promptInput.value = text;
+      generateSimulation();
+    });
+  });
+
   // 3. Multi-step loading ticker
   const TICKER_STEPS = [
-    "Parsing physics constraints...",
-    "Architecting Canvas 2D loop...",
-    "Sanitizing JS animation IDs...",
-    "Binding interactive sliders...",
-    "Rendering!"
+    "Parsing math & physics equations...",
+    "Solving differential constraints...",
+    "Architecting Canvas 2D render loop...",
+    "Binding interactive parameter sliders...",
+    "Rendering Math Simulation!"
   ];
 
   function startTicker() {
@@ -136,8 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Update Breakdown Card & iframe
       conceptTitle.textContent = data.title;
-      conceptBreakdown.textContent = data.concept_breakdown;
-      userInstructions.textContent = data.user_instructions;
+      conceptBreakdown.innerHTML = data.concept_breakdown;
+      userInstructions.innerHTML = data.user_instructions;
+      
+      triggerMathRender();
+
       simFrame.srcdoc = data.simulation_html;
 
     } catch (err) {
@@ -179,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (promptInput.value.trim()) {
       generateSimulation();
     } else {
-      loadDemo('solar_system');
+      loadDemo('fourier_series');
     }
   });
 
