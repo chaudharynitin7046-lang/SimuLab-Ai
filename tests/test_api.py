@@ -15,12 +15,14 @@ def test_get_demos():
     assert "wave_interference" in data
     assert "simulation_html" in data["fourier_series"]
 
-def test_generate_offline_fallback():
-    response = client.post("/api/generate", json={"concept": "quantum entanglement"})
-    assert response.status_code == 200
-    data = response.json()
-    assert "title" in data
-    assert "concept_breakdown" in data
-    assert "user_instructions" in data
-    assert "simulation_html" in data
-    assert "<canvas" in data["simulation_html"].lower()
+def test_generate_unlimited_any_topic():
+    # Test generation for arbitrary custom topics
+    for topic in ["quantum entanglement", "photosynthesis light reaction", "sorting algorithm quicksort"]:
+        response = client.post("/api/generate", json={"concept": topic})
+        assert response.status_code == 200
+        data = response.json()
+        assert "title" in data
+        assert "concept_breakdown" in data
+        assert "user_instructions" in data
+        assert "simulation_html" in data
+        assert "<canvas" in data["simulation_html"].lower()
